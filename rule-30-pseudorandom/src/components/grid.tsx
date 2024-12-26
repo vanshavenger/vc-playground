@@ -16,7 +16,7 @@ export const Grid = ({ grid }: GridProps) => {
 	return (
 		<div
 			ref={scrollRef}
-			className='h-96 overflow-auto border border-gray-200 bg-gray-100'
+			className='h-[700px] overflow-auto border border-gray-100 bg-gray-300'
 		>
 			{grid.map((row, i) => (
 				<div key={i} className='flex'>
