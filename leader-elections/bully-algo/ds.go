@@ -2,7 +2,6 @@ package main
 
 import (
 	"sync"
-	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -19,12 +18,12 @@ func NewDistributedSystem(numProcesses int) *DistributedSystem {
 	ds := &DistributedSystem{
 		messageQueue: make(chan Message, 1000),
 	}
-	ds.NewProcesses(numProcesses)
+	ds.newProcesses(numProcesses)
 	return ds
 }
 
 // NewProcesses is a function that creates a new processes in a distributed system.
-func (ds *DistributedSystem) NewProcesses(numProcesses int) {
+func (ds *DistributedSystem) newProcesses(numProcesses int) {
 	for i := 0; i < numProcesses; i++ {
 		proc := &Process{
 			id:            i + 1,
@@ -52,39 +51,6 @@ func (ds *DistributedSystem) recover(id int) {
 		log.Info().Msgf("Process %d recovered and starting election", id)
 		process.startElection()
 	}
-}
-
-func (p *Process) startElection() {
-	p.mutex.Lock()
-	if !p.isActive || p.state == ElectionState {
-		p.mutex.Unlock()
-		return
-	}
-	p.state = ElectionState
-	p.mutex.Unlock()
-
-	log.Info().Msgf("Process %d starting election", p.id)
-
-	hasHigherProcess := false
-	for _, proc := range p.ds.processes {
-		if proc.id > p.id && proc.isActive {
-			hasHigherProcess = true
-			p.ds.messageQueue <- Message{
-				Type:   Election,
-				FromID: p.id,
-				ToID:   proc.id,
-			}
-		}
-	}
-
-	if !hasHigherProcess {
-		p.becomeCoordinator()
-		return
-	}
-
-	p.electionTimer = time.AfterFunc(2*time.Second, func() {
-		p.handleElectionTimeout()
-	})
 }
 
 func (ds *DistributedSystem) simulateFailure(id int) {

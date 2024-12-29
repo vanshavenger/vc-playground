@@ -84,3 +84,36 @@ func (p *Process) becomeCoordinator() {
 		}
 	}
 }
+
+func (p *Process) startElection() {
+	p.mutex.Lock()
+	if !p.isActive || p.state == ElectionState {
+		p.mutex.Unlock()
+		return
+	}
+	p.state = ElectionState
+	p.mutex.Unlock()
+
+	log.Info().Msgf("Process %d starting election", p.id)
+
+	hasHigherProcess := false
+	for _, proc := range p.ds.processes {
+		if proc.id > p.id && proc.isActive {
+			hasHigherProcess = true
+			p.ds.messageQueue <- Message{
+				Type:   Election,
+				FromID: p.id,
+				ToID:   proc.id,
+			}
+		}
+	}
+
+	if !hasHigherProcess {
+		p.becomeCoordinator()
+		return
+	}
+
+	p.electionTimer = time.AfterFunc(4*time.Second, func() {
+		p.handleElectionTimeout()
+	})
+}
