@@ -34,9 +34,13 @@ func main() {
 	ds.processes[0].startElection()
 	time.Sleep(3 * time.Second)
 
-	ds.simulateFailure(5)
+	ds.simulateFailure(ds.getCoordinator().id)
 	time.Sleep(3 * time.Second)
 
 	ds.recover(5)
 	time.Sleep(3 * time.Second)
+
+	ds.addProcess(2)
+
+	time.Sleep(5 * time.Second)
 }

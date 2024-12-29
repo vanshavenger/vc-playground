@@ -26,6 +26,7 @@ type Process struct {
 	ds            *DistributedSystem
 	mutex         sync.Mutex
 	electionTimer *time.Timer
+	priority      int
 }
 
 func (p *Process) handleMessage(msg Message) {
@@ -98,7 +99,7 @@ func (p *Process) startElection() {
 
 	hasHigherProcess := false
 	for _, proc := range p.ds.processes {
-		if proc.id > p.id && proc.isActive {
+		if proc.id > p.id && proc.isActive && proc.priority > p.priority {
 			hasHigherProcess = true
 			p.ds.messageQueue <- Message{
 				Type:   Election,

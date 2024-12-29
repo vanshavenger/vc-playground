@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"sync"
 
 	"github.com/rs/zerolog/log"
@@ -31,6 +32,7 @@ func (ds *DistributedSystem) newProcesses(numProcesses int) {
 			isCoordinator: false,
 			state:         NormalState,
 			ds:            ds,
+			priority:      rand.Intn(10),
 		}
 		ds.processes = append(ds.processes, proc)
 	}
@@ -94,4 +96,31 @@ func (ds *DistributedSystem) startMessageHandler() {
 			}
 		}
 	}()
+}
+
+func (ds *DistributedSystem) addProcess(priority int) {
+	ds.mutex.Lock()
+	defer ds.mutex.Unlock()
+
+	newID := len(ds.processes) + 1
+	newProc := &Process{
+		id:            newID,
+		isActive:      true,
+		isCoordinator: false,
+		state:         NormalState,
+		ds:            ds,
+		priority:      priority,
+	}
+	ds.processes = append(ds.processes, newProc)
+	log.Info().Msgf("New process joined: ID %d, Priority %d", newID, priority)
+	newProc.startElection()
+}
+
+func (ds *DistributedSystem) getCoordinator() *Process {
+	for _, proc := range ds.processes {
+		if proc.isCoordinator {
+			return proc
+		}
+	}
+	return nil
 }
