@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import time
 from scipy import linalg, optimize
-from typing import Tuple, List
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,7 +42,7 @@ class ContentAnalyzer:
         logger.info(f"Minimized error: {result.fun}")
         return optimized_matrix
 
-    def _analyze_eigen(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _analyze_eigen(self) -> tuple[np.ndarray, np.ndarray]:
         logger.info("Analyzing eigenvalues and eigenvectors")
         eigenvalues, eigenvectors = linalg.eig(self.transition_matrix)
         logger.info(f"Eigenvalues: {eigenvalues}")
@@ -55,7 +54,7 @@ class ContentAnalyzer:
         logger.info(f"Predicted states shape: {predicted_states.shape}")
         return predicted_states
 
-    def analyze_creators(self, predicted_states: np.ndarray) -> Tuple[int, int, List[int], List[int]]:
+    def analyze_creators(self, predicted_states: np.ndarray) -> tuple[int, int, list[int], list[int]]:
         logger.info("Analyzing creators based on predicted states")
         highest_tech = np.argmax(predicted_states[0])
         highest_ent = np.argmax(predicted_states[1])
@@ -70,7 +69,7 @@ class ContentAnalyzer:
         logger.info(f"Tech to ent: {tech_to_ent}, Ent to tech: {ent_to_tech}")
         return highest_tech, highest_ent, tech_to_ent, ent_to_tech
 
-    def interpret_eigen(self) -> List[str]:
+    def interpret_eigen(self) -> list[str]:
         logger.info("Interpreting eigenvalues and eigenvectors")
         interpretations = []
         for i, (eigenvalue, eigenvector) in enumerate(zip(self.eigenvalues, self.eigenvectors.T)):
