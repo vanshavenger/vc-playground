@@ -1,19 +1,22 @@
 {
   "name": "@repo/backend-config",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
-    "@types/node": "^22.10.5"
+    "@types/node": "^22.10.5",
+    "typescript": "^5.0.0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "exports": {
-    "./config": "./src/index.ts"
+    "./config": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }

@@ -1,13 +1,15 @@
 {
   "name": "http-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -b",
-    "dev": "bun run build && bun run start",
+    "build": "tsc",
+    "dev": "tsc -w & node --watch dist/index.js",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -18,12 +20,9 @@
     "@repo/typescript-config": "*",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@repo/config": "*",
     "@repo/backend-config": "*",
     "@repo/db": "*",
-    "@repo/config": "*"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "@types/bcrypt": "^5.0.2"
+  }
 }

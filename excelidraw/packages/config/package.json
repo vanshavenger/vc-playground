@@ -1,21 +1,24 @@
 {
   "name": "@repo/config",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "exports": {
-    "./types": "./src/index.ts"
+    "@repo/typescript-config": "*",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "zod": "^3.24.1"
+  },
+  "exports": {
+    "./types": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }

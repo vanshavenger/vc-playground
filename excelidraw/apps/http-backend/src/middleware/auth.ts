@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import { JWT_SECRET } from '@repo/backend-config/config'
-
 declare global {
   namespace Express {
     interface Request {
