@@ -14,13 +14,19 @@ export const signup = async (
   next: NextFunction
 ) => {
   try {
-    const data = await UserSchema.parseAsync(req.body)
+    const data = await UserSchema.safeParseAsync(req.body)
 
-    const hashedPassword = await bcrypt.hash(data.password, BCRYPT_SALT)
+    if (!data.success) {
+      throw new CustomError(data.error.message, 400)
+    }
+
+    const { password } = data.data
+
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT)
 
     const dbResponse = await prisma.user.create({
       data: {
-        ...data,
+        ...data.data,
         password: hashedPassword,
       },
     })
@@ -43,17 +49,23 @@ export const signin = async (
   next: NextFunction
 ) => {
   try {
-    const data = await SignInSchema.parseAsync(req.body)
+    const data = await SignInSchema.safeParseAsync(req.body)
+
+    if (!data.success) {
+      throw new CustomError(data.error.message, 400)
+    }
+
+    const { username, password } = data.data
 
     const user = await prisma.user.findUnique({
-      where: { username: data.username },
+      where: { username: username },
     })
 
     if (!user) {
       throw new CustomError('User not found', 404)
     }
 
-    const passwordMatch = await bcrypt.compare(data.password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password)
 
     if (!passwordMatch) {
       throw new CustomError('Invalid credentials', 401)

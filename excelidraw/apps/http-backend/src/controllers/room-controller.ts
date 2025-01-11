@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { CreateRoomSchema } from '@repo/config/types'
 import { PrismaClient } from '@prisma/client'
+import { CustomError } from '../utils/custom-error.js'
 
 const prisma = new PrismaClient()
 
@@ -10,11 +11,17 @@ export const createRoom = async (
   next: NextFunction
 ) => {
   try {
-    const data = await CreateRoomSchema.parseAsync(req.body)
+    const data = await CreateRoomSchema.safeParseAsync(req.body)
+
+    if (!data.success) {
+      throw new CustomError(data.error.message, 400)
+    }
+
+    const { name } = data.data
 
     const dbResponse = await prisma.room.create({
       data: {
-        name: data.name,
+        name: name,
         ownerId: req.userID,
       },
     })

@@ -29,8 +29,7 @@ app.get('/health', (req, res) => {
 app.use(notFoundHandler)
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack)
-  res.status(500).json({ message: 'Something went wrong' })
+  res.status(500).json({ message: err.message })
 })
 
 const server = createServer(app)
