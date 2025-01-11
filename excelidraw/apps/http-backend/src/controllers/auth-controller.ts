@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
 import { UserSchema, SignInSchema } from '@repo/config/types'
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { BCRYPT_SALT, JWT_SECRET } from '@repo/backend-config/config'
+import { JWT_SECRET } from '@repo/backend-config/config'
 import { CustomError } from '../utils/custom-error.js'
+import argon2 from 'argon2'
 
 const prisma = new PrismaClient()
 
@@ -22,7 +22,7 @@ export const signup = async (
 
     const { password } = data.data
 
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT)
+    const hashedPassword = await argon2.hash(password)
 
     const dbResponse = await prisma.user.create({
       data: {
@@ -65,7 +65,7 @@ export const signin = async (
       throw new CustomError('User not found', 404)
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password)
+    const passwordMatch = await argon2.verify(user.password, password)
 
     if (!passwordMatch) {
       throw new CustomError('Invalid credentials', 401)
