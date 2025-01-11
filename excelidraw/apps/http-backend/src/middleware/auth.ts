@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import 'dotenv/config'
 import { JWT_SECRET } from '@repo/backend-config/config'
+import { CustomError } from '../utils/custom-error.js'
+
 declare global {
   namespace Express {
     interface Request {
@@ -15,39 +16,40 @@ export const authMiddleware = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const token = req.headers.authorization
-  if (!token) {
-    res.status(401).json({ message: 'Unauthorized' })
-    return
-  }
-
-  const [type, value] = token.split(' ')
-  if (type !== 'Bearer') {
-    res.status(401).json({ message: 'Unauthorized' })
-    return
-  }
-
-  if (!value) {
-    res.status(401).json({ message: 'Unauthorized' })
-    return
-  }
-
   try {
-    const decoded = jwt.verify(value, JWT_SECRET)
-
-    if (typeof decoded === 'string') {
-      res.status(401).json({ message: 'Unauthorized' })
-      return
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+      throw new CustomError('No authorization header', 401)
     }
 
-    if (!decoded || !decoded.userID) {
-      res.status(401).json({ message: 'Unauthorized' })
-      return
+    const [type, token] = authHeader.split(' ')
+    if (type !== 'Bearer' || !token) {
+      throw new CustomError('Invalid authorization format', 401)
     }
 
-    req.userID = decoded.userID
-    next()
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
+
+      if (!decoded || typeof decoded === 'string' || !decoded.userID) {
+        throw new CustomError('Invalid token payload', 401)
+      }
+
+      req.userID = decoded.userID
+      next()
+    } catch (jwtError) {
+      if (jwtError instanceof jwt.JsonWebTokenError) {
+        throw new CustomError('Invalid token', 401)
+      } else if (jwtError instanceof jwt.TokenExpiredError) {
+        throw new CustomError('Token expired', 401)
+      } else {
+        throw jwtError
+      }
+    }
   } catch (error) {
-    res.status(401).json({ message: 'Unauthorized' })
+    if (error instanceof CustomError) {
+      res.status(error.statusCode).json({ message: error.message })
+    } else {
+      res.status(500).json({ message: 'Internal server error' })
+    }
   }
 }
