@@ -1,5 +1,7 @@
+import { WS_BACKEND_PORT } from '@repo/backend-config/config'
+
 export const CONFIG = {
-  PORT: 8080,
+  PORT: WS_BACKEND_PORT || 8080,
   HOST: 'localhost',
 } as const
 
