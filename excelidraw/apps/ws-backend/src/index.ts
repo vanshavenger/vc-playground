@@ -2,6 +2,9 @@ import { WebSocketServer, WebSocket, RawData } from 'ws'
 import { CONFIG, EVENTS, MESSAGE_TYPES } from './constants.js'
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '@repo/backend-config/config'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 interface DecodedToken {
   userID: string
@@ -50,7 +53,15 @@ function leaveRoom(userID: string, roomID: string) {
   }
 }
 
-function sendMessageToRoom(senderID: string, roomID: string, message: string) {
+async function sendMessageToRoom(senderID: string, roomID: string, message: string) {
+  await prisma.chat.create({
+    data: {
+      message,
+      senderId: senderID,
+      roomId: roomID,
+
+    }
+  })
   userRooms.forEach(ur => {
     if (ur.roomIDs.includes(roomID) && ur.userID !== senderID) {
       ur.ws.send(
@@ -87,7 +98,7 @@ wss.on(EVENTS.CONNECTION, (ws: WebSocket, request) => {
 
     console.log(`Client authenticated: ${decoded.userID}`)
 
-    ws.on(EVENTS.MESSAGE, (data: RawData) => {
+    ws.on(EVENTS.MESSAGE, async (data: RawData) => {
       try {
         const message: Message = JSON.parse(data.toString())
 
@@ -104,7 +115,7 @@ wss.on(EVENTS.CONNECTION, (ws: WebSocket, request) => {
             break
           case MESSAGE_TYPES.MESSAGE:
             if (message.roomID && message.content) {
-              sendMessageToRoom(decoded.userID, message.roomID, message.content)
+              await sendMessageToRoom(decoded.userID, message.roomID, message.content)
             }
             break
           default:

@@ -61,3 +61,25 @@ export const getLast50ChatMessages = async (
     next(error)
   }
 }
+
+export const getRoom = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { roomID } = req.params
+
+    if (!roomID) {
+      throw new CustomError('Room ID is required', 400)
+    }
+
+    const room = await prisma.room.findUnique({
+      where: { id: roomID },
+    })
+
+    if (!room) {
+      throw new CustomError('Room not found', 404)
+    }
+
+    res.status(200).json(room)
+  } catch (error) {
+    next(error)
+  }
+}
