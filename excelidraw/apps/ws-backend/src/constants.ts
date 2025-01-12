@@ -11,3 +11,9 @@ export const EVENTS = {
   CLOSE: 'close',
   ERROR: 'error',
 } as const
+
+export const MESSAGE_TYPES = {
+  JOIN: 'join',
+  LEAVE: 'leave',
+  MESSAGE: 'message',
+} as const
