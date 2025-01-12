@@ -33,3 +33,31 @@ export const createRoom = async (
     next(error)
   }
 }
+
+export const getLast50ChatMessages = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { roomID } = req.query
+
+    if (!roomID) {
+      throw new CustomError('Room ID is required', 400)
+    }
+
+    const messages = await prisma.chat.findMany({
+      where: {
+        roomId: roomID.toString(),
+      },
+      take: 50,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    res.status(200).json(messages)
+  } catch (error) {
+    next(error)
+  }
+}
