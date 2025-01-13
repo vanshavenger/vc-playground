@@ -5,7 +5,12 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@prisma/client": ["@repo/db/client/*"]
+    },
+    "baseUrl": "."
   },
   "include": [
     "**/*.ts",
@@ -14,10 +19,5 @@
     "next.config.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"],
-  "paths": {
-    "@/*": ["./*"],
-    "@prisma/client": ["@repo/db/client/*"]
-  },
-  "baseUrl": "."
+  "exclude": ["node_modules"]
 }

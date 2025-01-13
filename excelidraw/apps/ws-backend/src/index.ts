@@ -1,156 +1,133 @@
-import { WebSocketServer, WebSocket, RawData } from 'ws'
-import { CONFIG, EVENTS, MESSAGE_TYPES } from './constants.js'
+import { WebSocketServer, WebSocket } from 'ws'
+import { createServer } from 'http'
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '@repo/backend-config/config'
-import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+const server = createServer()
+const wss = new WebSocketServer({ server })
 
-interface DecodedToken {
-  userID: string
-  [key: string]: any
+const port = process.env.WS_BACKEND_PORT || 3002
+
+interface ExtWebSocket extends WebSocket {
+  userID?: string
+  roomId?: string
 }
 
-interface UserRoom {
-  ws: WebSocket
-  userID: string
-  roomIDs: string[]
+interface Room {
+  id: string
+  users: Set<string>
+  drawingData: any[]
 }
 
-interface Message {
-  type: string
-  roomID?: string
-  content?: string
-}
+const rooms: Map<string, Room> = new Map()
 
-const userRooms: UserRoom[] = []
-const wss = new WebSocketServer({ port: CONFIG.PORT })
+wss.on('connection', (ws: ExtWebSocket) => {
+  console.log('Client connected')
 
-function joinRoom(userID: string, roomID: string, ws: WebSocket) {
-  const userRoom = userRooms.find(ur => ur.userID === userID)
-  if (userRoom) {
-    if (!userRoom.roomIDs.includes(roomID)) {
-      userRoom.roomIDs.push(roomID)
-    }
-  } else {
-    userRooms.push({ ws, userID, roomIDs: [roomID] })
-  }
-  console.log(`User ${userID} joined room ${roomID}`)
-}
+  ws.on('message', (message: string) => {
+    const data = JSON.parse(message)
 
-function leaveRoom(userID: string, roomID: string) {
-  const userRoomIndex = userRooms.findIndex(ur => ur.userID === userID)
-  if (userRoomIndex !== -1) {
-    const userRoom = userRooms[userRoomIndex]
-    if (userRoom) {
-      userRoom.roomIDs = userRoom.roomIDs.filter(id => id !== roomID)
-      console.log(`User ${userID} left room ${roomID}`)
-      if (userRoom.roomIDs.length === 0) {
-        userRooms.splice(userRoomIndex, 1)
-        console.log(`User ${userID} removed from userRooms (no rooms left)`)
-      }
-    }
-  }
-}
-
-async function sendMessageToRoom(senderID: string, roomID: string, message: string) {
-  await prisma.chat.create({
-    data: {
-      message,
-      senderId: senderID,
-      roomId: roomID,
-
+    switch (data.type) {
+      case 'auth':
+        handleAuth(ws, data.token)
+        break
+      case 'join_room':
+        handleJoinRoom(ws, data.roomId)
+        break
+      case 'leave_room':
+        handleLeaveRoom(ws)
+        break
+      case 'draw':
+        handleDraw(ws, data.drawingData)
+        break
+      default:
+        console.warn('Unknown message type:', data.type)
     }
   })
-  userRooms.forEach(ur => {
-    if (ur.roomIDs.includes(roomID) && ur.userID !== senderID) {
-      ur.ws.send(
-        JSON.stringify({
-          type: MESSAGE_TYPES.MESSAGE,
-          roomID,
-          senderID,
-          content: message,
-        })
-      )
-    }
-  })
-}
 
-wss.on(EVENTS.CONNECTION, (ws: WebSocket, request) => {
+  ws.on('close', () => {
+    handleLeaveRoom(ws)
+    console.log('Client disconnected')
+  })
+})
+
+function handleAuth(ws: ExtWebSocket, token: string) {
   try {
-    const authHeader = request.headers['authorization']
-
-    if (!authHeader) {
-      throw new Error('Missing authorization header')
-    }
-
-    const [type, token] = authHeader.split(' ')
-
-    if (type !== 'Bearer' || !token) {
-      throw new Error('Invalid authorization format')
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken
-
-    if (!decoded || !decoded.userID) {
-      throw new Error('Invalid token payload')
-    }
-
-    console.log(`Client authenticated: ${decoded.userID}`)
-
-    ws.on(EVENTS.MESSAGE, async (data: RawData) => {
-      try {
-        const message: Message = JSON.parse(data.toString())
-
-        switch (message.type) {
-          case MESSAGE_TYPES.JOIN:
-            if (message.roomID) {
-              joinRoom(decoded.userID, message.roomID, ws)
-            }
-            break
-          case MESSAGE_TYPES.LEAVE:
-            if (message.roomID) {
-              leaveRoom(decoded.userID, message.roomID)
-            }
-            break
-          case MESSAGE_TYPES.MESSAGE:
-            if (message.roomID && message.content) {
-              await sendMessageToRoom(decoded.userID, message.roomID, message.content)
-            }
-            break
-          default:
-            console.warn(
-              `Unknown message type received from ${decoded.userID}:`,
-              message.type
-            )
-        }
-      } catch (error) {
-        console.error(`Error processing message from ${decoded.userID}:`, error)
-      }
-    })
-
-    ws.on(EVENTS.CLOSE, () => {
-      console.log(`Client disconnected: ${decoded.userID}`)
-      const userRoomIndex = userRooms.findIndex(
-        ur => ur.userID === decoded.userID
-      )
-      if (userRoomIndex !== -1) {
-        userRooms.splice(userRoomIndex, 1)
-        console.log(`User ${decoded.userID} removed from all rooms`)
-      }
-    })
-
-    ws.on(EVENTS.ERROR, (error: Error) => {
-      console.error(`WebSocket error for ${decoded.userID}:`, error)
-    })
+    const decoded = jwt.verify(token, JWT_SECRET) as { userID: string }
+    ws.userID = decoded.userID
+    ws.send(JSON.stringify({ type: 'auth', success: true }))
   } catch (error) {
-    console.error('Authentication error:', error)
-    ws.close(1008, 'Authentication failed')
+    ws.send(
+      JSON.stringify({ type: 'auth', success: false, error: 'Invalid token' })
+    )
   }
-})
+}
 
-wss.on('error', (error: Error) => {
-  console.error('WebSocket server error:', error)
-})
+function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
+  if (!ws.userID) {
+    ws.send(JSON.stringify({ type: 'error', message: 'Not authenticated' }))
+    return
+  }
 
-console.log(`WebSocket server is running on ws://${CONFIG.HOST}:${CONFIG.PORT}`)
+  let room = rooms.get(roomId)
+  if (!room) {
+    room = { id: roomId, users: new Set(), drawingData: [] }
+    rooms.set(roomId, room)
+  }
+
+  room.users.add(ws.userID)
+  ws.roomId = roomId
+
+  ws.send(
+    JSON.stringify({
+      type: 'room_joined',
+      roomId,
+      drawingData: room.drawingData,
+    })
+  )
+  broadcastToRoom(roomId, { type: 'user_joined', userId: ws.userID })
+}
+
+function handleLeaveRoom(ws: ExtWebSocket) {
+  if (ws.roomId && ws.userID) {
+    const room = rooms.get(ws.roomId)
+    if (room) {
+      room.users.delete(ws.userID)
+      broadcastToRoom(ws.roomId, { type: 'user_left', userId: ws.userID })
+      if (room.users.size === 0) {
+        rooms.delete(ws.roomId)
+      }
+    }
+    ws.roomId = undefined
+  }
+}
+
+function handleDraw(ws: ExtWebSocket, drawingData: any) {
+  if (!ws.userID || !ws.roomId) {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Not authenticated or not in a room',
+      })
+    )
+    return
+  }
+
+  const room = rooms.get(ws.roomId)
+  if (room) {
+    room.drawingData.push(drawingData)
+    broadcastToRoom(ws.roomId, { type: 'draw', userId: ws.userID, drawingData })
+  }
+}
+
+function broadcastToRoom(roomId: string, message: any) {
+  wss.clients.forEach((client: ExtWebSocket) => {
+    if (client.roomId === roomId) {
+      client.send(JSON.stringify(message))
+    }
+  })
+}
+
+server.listen(port, () => {
+  console.log(`WebSocket server is running on port ${port}`)
+})
