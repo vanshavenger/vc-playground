@@ -14,6 +14,7 @@ import { roomRoutes } from './routes/room.js'
 import { notFoundHandler } from './middleware/not-found-handler.js'
 import { userRoutes } from './routes/user.js'
 import { chatRoutes } from './routes/chat.js'
+import { drawingRoutes } from './routes/drawing.js'
 
 const app = express()
 
@@ -25,6 +26,7 @@ app.use('/auth', authRoutes)
 app.use('/room', roomRoutes)
 app.use('/user', userRoutes)
 app.use('/chat', chatRoutes)
+app.use('/drawing', drawingRoutes)
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' })
