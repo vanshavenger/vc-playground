@@ -20,13 +20,13 @@ export const signup = async (
       throw new CustomError(data.error.message, 400)
     }
 
-    const { password } = data.data
+    const { password, ...userData } = data.data
 
     const hashedPassword = await argon2.hash(password)
 
     const dbResponse = await prisma.user.create({
       data: {
-        ...data.data,
+        ...userData,
         password: hashedPassword,
       },
     })
