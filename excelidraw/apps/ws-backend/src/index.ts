@@ -85,7 +85,7 @@ function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
       drawingData: room.drawingData,
     })
   )
-  broadcastToRoom(roomId, { type: 'user_joined', userId: ws.userID })
+  broadcastToRoom(roomId, { type: 'user_joined', userID: ws.userID })
 }
 
 function handleLeaveRoom(ws: ExtWebSocket) {
@@ -93,7 +93,7 @@ function handleLeaveRoom(ws: ExtWebSocket) {
     const room = rooms.get(ws.roomId)
     if (room) {
       room.users.delete(ws.userID)
-      broadcastToRoom(ws.roomId, { type: 'user_left', userId: ws.userID })
+      broadcastToRoom(ws.roomId, { type: 'user_left', userID: ws.userID })
       if (room.users.size === 0) {
         rooms.delete(ws.roomId)
       }
@@ -115,8 +115,13 @@ function handleDraw(ws: ExtWebSocket, drawingData: any) {
 
   const room = rooms.get(ws.roomId)
   if (room) {
-    room.drawingData.push(drawingData)
-    broadcastToRoom(ws.roomId, { type: 'draw', userId: ws.userID, drawingData })
+    const drawEvent = {
+      type: 'draw',
+      userID: ws.userID,
+      drawingData,
+    }
+    room.drawingData.push(drawEvent)
+    broadcastToRoom(ws.roomId, drawEvent)
   }
 }
 
