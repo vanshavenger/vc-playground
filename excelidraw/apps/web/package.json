@@ -11,8 +11,6 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/db": "*",
-    "@repo/ui": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.471.1",
@@ -31,6 +29,9 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.0",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "@repo/backend-config": "*",
+    "@repo/db": "*",
+    "@repo/ui": "*"
   }
 }

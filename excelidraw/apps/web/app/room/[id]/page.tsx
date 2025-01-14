@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { WS_BACKEND_BASE_URL } from '@/lib/utils'
 
 interface DrawingData {
   type: 'draw'
-  userId: string
+  userID: string
   drawingData: {
-    startX: number
-    startY: number
-    endX: number
-    endY: number
+    x: number
+    y: number
     color: string
+    isNewLine: boolean
   }
 }
 
 export default function Room() {
-    const { id } = useParams()
+  const { id } = useParams()
   const router = useRouter()
 
   const [isConnected, setIsConnected] = useState(false)
@@ -26,6 +26,7 @@ export default function Room() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const wsRef = useRef<WebSocket | null>(null)
   const isDrawing = useRef(false)
+  const lastPoint = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -34,7 +35,7 @@ export default function Room() {
       return
     }
 
-    const ws = new WebSocket(`ws://localhost:3002`)
+    const ws = new WebSocket(WS_BACKEND_BASE_URL)
     wsRef.current = ws
 
     ws.onopen = () => {
@@ -59,6 +60,7 @@ export default function Room() {
           break
         case 'draw':
           setDrawingData(prevData => [...prevData, data])
+          drawOnCanvas(data.drawingData)
           break
         case 'error':
           setError(data.message)
@@ -89,50 +91,68 @@ export default function Room() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     drawingData.forEach(data => {
       if (data.type === 'draw') {
-        const { startX, startY, endX, endY, color } = data.drawingData
-        ctx.beginPath()
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(endX, endY)
-        ctx.strokeStyle = color
-        ctx.lineWidth = 2
-        ctx.lineCap = 'round'
-        ctx.stroke()
+        drawOnCanvas(data.drawingData)
       }
     })
   }, [drawingData])
 
+  const drawOnCanvas = (data: DrawingData['drawingData']) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    ctx.strokeStyle = data.color
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+
+    if (data.isNewLine) {
+      ctx.beginPath()
+      ctx.moveTo(data.x, data.y)
+    } else {
+      ctx.lineTo(data.x, data.y)
+      ctx.stroke()
+    }
+  }
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isDrawing.current = true
-    draw(e)
+    const { offsetX, offsetY } = e.nativeEvent
+    lastPoint.current = { x: offsetX, y: offsetY }
+    draw(offsetX, offsetY, true)
   }
 
   const stopDrawing = () => {
     isDrawing.current = false
+    lastPoint.current = null
   }
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (x: number, y: number, isNewLine: boolean) => {
     if (!isDrawing.current) return
-
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
 
     const drawData: DrawingData = {
       type: 'draw',
-      userId: 'currentUser', // This should be replaced with the actual user ID
+      userID: 'currentUser', // This should be replaced with the actual user ID
       drawingData: {
-        startX: x,
-        startY: y,
-        endX: x,
-        endY: y,
+        x,
+        y,
         color: currentColor,
+        isNewLine,
       },
     }
 
     wsRef.current?.send(JSON.stringify(drawData))
+    drawOnCanvas(drawData.drawingData)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current || !lastPoint.current) return
+
+    const { offsetX, offsetY } = e.nativeEvent
+    draw(offsetX, offsetY, false)
+    lastPoint.current = { x: offsetX, y: offsetY }
   }
 
   if (error) {
@@ -184,7 +204,7 @@ export default function Room() {
           width={800}
           height={600}
           onMouseDown={startDrawing}
-          onMouseMove={draw}
+          onMouseMove={handleMouseMove}
           onMouseUp={stopDrawing}
           onMouseOut={stopDrawing}
           className='border border-gray-300 cursor-crosshair'

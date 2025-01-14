@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { HTTP_BACKEND_BASE_URL } from '@/lib/utils'
 
 interface Room {
   id: string
@@ -13,8 +14,7 @@ export default function Rooms() {
   const [newRoomName, setNewRoomName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
-    const router = useRouter()
-    
+  const router = useRouter()
 
   useEffect(() => {
     fetchRooms()
@@ -23,7 +23,7 @@ export default function Rooms() {
   const fetchRooms = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:8081/room', {
+      const response = await fetch(`${HTTP_BACKEND_BASE_URL}/room`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -45,7 +45,7 @@ export default function Rooms() {
     e.preventDefault()
     setError('')
     try {
-      const response = await fetch('http://localhost:8081/room', {
+      const response = await fetch(`${HTTP_BACKEND_BASE_URL}/room`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,11 +55,11 @@ export default function Rooms() {
       })
       if (response.ok) {
         const newRoom = await response.json()
-        setRooms([...rooms, newRoom])
+        setRooms(prevRooms => [...prevRooms, newRoom])
         setNewRoomName('')
       } else {
         const data = await response.json()
-        setError(data.message || 'Failed to create room')
+        setError(JSON.parse(data.message)[0].message || 'Failed to create room')
       }
     } catch  {
       setError('An error occurred while creating the room')

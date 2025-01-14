@@ -31,7 +31,10 @@ export default function Navigation() {
               <Link href='/rooms' className='mr-4 hover:text-gray-300'>
                 Rooms
               </Link>
-              <button onClick={handleLogout} className='hover:text-gray-300'>
+              <button
+                onClick={handleLogout}
+                className='bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded'
+              >
                 Logout
               </button>
             </>

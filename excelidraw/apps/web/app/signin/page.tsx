@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { HTTP_BACKEND_BASE_URL } from '@/lib/utils'
 
 export default function SignIn() {
   const [username, setUsername] = useState('')
@@ -14,7 +15,7 @@ export default function SignIn() {
     e.preventDefault()
     setError('')
     try {
-      const response = await fetch('http://localhost:8081/auth/signin', {
+      const response = await fetch(`${HTTP_BACKEND_BASE_URL}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

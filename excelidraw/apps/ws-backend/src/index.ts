@@ -1,12 +1,12 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer } from 'http'
 import jwt from 'jsonwebtoken'
-import { JWT_SECRET } from '@repo/backend-config/config'
+import { JWT_SECRET, WS_BACKEND_PORT } from '@repo/backend-config/config'
 
 const server = createServer()
 const wss = new WebSocketServer({ server })
 
-const port = process.env.WS_BACKEND_PORT || 3002
+const port = WS_BACKEND_PORT
 
 interface ExtWebSocket extends WebSocket {
   userID?: string
