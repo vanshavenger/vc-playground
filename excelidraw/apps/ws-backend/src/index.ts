@@ -1,10 +1,12 @@
 import { WebSocketServer, WebSocket } from 'ws'
 import { createServer } from 'http'
 import jwt from 'jsonwebtoken'
+import { PrismaClient } from '@prisma/client'
 import { JWT_SECRET, WS_BACKEND_PORT } from '@repo/backend-config/config'
 
 const server = createServer()
 const wss = new WebSocketServer({ server })
+const prisma = new PrismaClient()
 
 const port = WS_BACKEND_PORT
 
@@ -24,7 +26,7 @@ const rooms: Map<string, Room> = new Map()
 wss.on('connection', (ws: ExtWebSocket) => {
   console.log('Client connected')
 
-  ws.on('message', (message: string) => {
+  ws.on('message', async (message: string) => {
     const data = JSON.parse(message)
 
     switch (data.type) {
@@ -32,13 +34,19 @@ wss.on('connection', (ws: ExtWebSocket) => {
         handleAuth(ws, data.token)
         break
       case 'join_room':
-        handleJoinRoom(ws, data.roomId)
+        await handleJoinRoom(ws, data.roomId)
         break
       case 'leave_room':
-        handleLeaveRoom(ws)
+        await handleLeaveRoom(ws)
         break
       case 'draw':
-        handleDraw(ws, data.drawingData)
+        await handleDraw(ws, data.drawingData)
+        break
+      case 'add_shape':
+        await handleAddShape(ws, data.shapeData)
+        break
+      case 'erase':
+        await handleErase(ws, data.eraseData)
         break
       default:
         console.warn('Unknown message type:', data.type)
@@ -63,7 +71,7 @@ function handleAuth(ws: ExtWebSocket, token: string) {
   }
 }
 
-function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
+async function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
   if (!ws.userID) {
     ws.send(JSON.stringify({ type: 'error', message: 'Not authenticated' }))
     return
@@ -71,7 +79,21 @@ function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
 
   let room = rooms.get(roomId)
   if (!room) {
-    room = { id: roomId, users: new Set(), drawingData: [] }
+    const dbRoom = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: { drawings: true },
+    })
+
+    if (!dbRoom) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Room not found' }))
+      return
+    }
+
+    room = {
+      id: roomId,
+      users: new Set(),
+      drawingData: dbRoom.drawings.map(d => JSON.parse(d.data as string)),
+    }
     rooms.set(roomId, room)
   }
 
@@ -88,13 +110,14 @@ function handleJoinRoom(ws: ExtWebSocket, roomId: string) {
   broadcastToRoom(roomId, { type: 'user_joined', userID: ws.userID })
 }
 
-function handleLeaveRoom(ws: ExtWebSocket) {
+async function handleLeaveRoom(ws: ExtWebSocket) {
   if (ws.roomId && ws.userID) {
     const room = rooms.get(ws.roomId)
     if (room) {
       room.users.delete(ws.userID)
       broadcastToRoom(ws.roomId, { type: 'user_left', userID: ws.userID })
       if (room.users.size === 0) {
+        await saveRoomDrawings(ws.roomId, room.drawingData)
         rooms.delete(ws.roomId)
       }
     }
@@ -102,7 +125,7 @@ function handleLeaveRoom(ws: ExtWebSocket) {
   }
 }
 
-function handleDraw(ws: ExtWebSocket, drawingData: any) {
+async function handleDraw(ws: ExtWebSocket, drawingData: any) {
   if (!ws.userID || !ws.roomId) {
     ws.send(
       JSON.stringify({
@@ -115,13 +138,50 @@ function handleDraw(ws: ExtWebSocket, drawingData: any) {
 
   const room = rooms.get(ws.roomId)
   if (room) {
-    const drawEvent = {
-      type: 'draw',
-      userID: ws.userID,
-      drawingData,
-    }
+    const drawEvent = { type: 'draw', userID: ws.userID, drawingData }
     room.drawingData.push(drawEvent)
     broadcastToRoom(ws.roomId, drawEvent)
+    await saveDrawing(ws.roomId, ws.userID, drawEvent)
+  }
+}
+
+async function handleAddShape(ws: ExtWebSocket, shapeData: any) {
+  if (!ws.userID || !ws.roomId) {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Not authenticated or not in a room',
+      })
+    )
+    return
+  }
+
+  const room = rooms.get(ws.roomId)
+  if (room) {
+    const shapeEvent = { type: 'add_shape', userID: ws.userID, shapeData }
+    room.drawingData.push(shapeEvent)
+    broadcastToRoom(ws.roomId, shapeEvent)
+    await saveDrawing(ws.roomId, ws.userID, shapeEvent)
+  }
+}
+
+async function handleErase(ws: ExtWebSocket, eraseData: any) {
+  if (!ws.userID || !ws.roomId) {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        message: 'Not authenticated or not in a room',
+      })
+    )
+    return
+  }
+
+  const room = rooms.get(ws.roomId)
+  if (room) {
+    const eraseEvent = { type: 'erase', userID: ws.userID, eraseData }
+    room.drawingData.push(eraseEvent)
+    broadcastToRoom(ws.roomId, eraseEvent)
+    await saveDrawing(ws.roomId, ws.userID, eraseEvent)
   }
 }
 
@@ -130,6 +190,27 @@ function broadcastToRoom(roomId: string, message: any) {
     if (client.roomId === roomId) {
       client.send(JSON.stringify(message))
     }
+  })
+}
+
+async function saveDrawing(roomId: string, userId: string, drawingData: any) {
+  await prisma.drawing.create({
+    data: {
+      data: JSON.stringify(drawingData),
+      roomId: roomId,
+      userId: userId,
+    },
+  })
+}
+
+async function saveRoomDrawings(roomId: string, drawingData: any[]) {
+  await prisma.drawing.deleteMany({ where: { roomId: roomId } })
+  await prisma.drawing.createMany({
+    data: drawingData.map(d => ({
+      data: JSON.stringify(d),
+      roomId: roomId,
+      userId: d.userID,
+    })),
   })
 }
 
