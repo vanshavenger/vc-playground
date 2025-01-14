@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { HTTP_BACKEND_BASE_URL } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface Room {
   id: string
@@ -84,7 +86,7 @@ export default function Rooms() {
         <h1 className='text-2xl font-bold mb-6'>Rooms</h1>
         {error && <p className='text-red-500 mb-4'>{error}</p>}
         <form onSubmit={createRoom} className='mb-6'>
-          <input
+          <Input
             type='text'
             value={newRoomName}
             onChange={e => setNewRoomName(e.target.value)}
@@ -92,12 +94,9 @@ export default function Rooms() {
             className='w-full px-3 py-2 border rounded mr-2'
             required
           />
-          <button
-            type='submit'
-            className='mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
-          >
+          <Button type='submit' className='mt-2 px-4 py-2 rounded'>
             Create Room
-          </button>
+          </Button>
         </form>
         {rooms.length === 0 ? (
           <p>No rooms available. Create one to get started!</p>
@@ -109,12 +108,12 @@ export default function Rooms() {
                 className='flex items-center justify-between bg-gray-50 p-3 rounded'
               >
                 <span>{room.name}</span>
-                <button
+                <Button
                   onClick={() => joinRoom(room.id)}
                   className='bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600'
                 >
                   Join
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

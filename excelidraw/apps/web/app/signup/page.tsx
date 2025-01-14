@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HTTP_BACKEND_BASE_URL } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export default function SignUp() {
   const [username, setUsername] = useState('')
@@ -47,7 +49,7 @@ export default function SignUp() {
             <label htmlFor='username' className='block mb-1'>
               Username
             </label>
-            <input
+            <Input
               type='text'
               id='username'
               value={username}
@@ -60,7 +62,7 @@ export default function SignUp() {
             <label htmlFor='email' className='block mb-1'>
               Email
             </label>
-            <input
+            <Input
               type='email'
               id='email'
               value={email}
@@ -73,7 +75,7 @@ export default function SignUp() {
             <label htmlFor='password' className='block mb-1'>
               Password
             </label>
-            <input
+            <Input
               type='password'
               id='password'
               value={password}
@@ -86,7 +88,7 @@ export default function SignUp() {
             <label htmlFor='name' className='block mb-1'>
               Name
             </label>
-            <input
+            <Input
               type='text'
               id='name'
               value={name}
@@ -95,12 +97,12 @@ export default function SignUp() {
               required
             />
           </div>
-          <button
+          <Button
             type='submit'
             className='w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600'
           >
             Sign Up
-          </button>
+          </Button>
         </form>
         <p className='mt-4 text-center'>
           Already have an account?{' '}
