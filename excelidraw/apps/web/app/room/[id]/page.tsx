@@ -6,7 +6,6 @@ import { WS_BACKEND_BASE_URL } from '@/lib/utils'
 
 interface DrawingData {
   type: 'draw'
-  userID: string
   drawingData: {
     x: number
     y: number
@@ -134,7 +133,6 @@ export default function Room() {
 
     const drawData: DrawingData = {
       type: 'draw',
-      userID: 'currentUser', // This should be replaced with the actual user ID
       drawingData: {
         x,
         y,
