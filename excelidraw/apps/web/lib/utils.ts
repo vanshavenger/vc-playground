@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { HTTP_BACKEND_PORT, WS_BACKEND_PORT } from '@repo/backend-config/config';
+import { HTTP_BACKEND_PORT, WS_BACKEND_PORT } from '@repo/backend-config/config'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

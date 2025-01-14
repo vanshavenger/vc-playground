@@ -61,7 +61,7 @@ export default function Rooms() {
         const data = await response.json()
         setError(JSON.parse(data.message)[0].message || 'Failed to create room')
       }
-    } catch  {
+    } catch {
       setError('An error occurred while creating the room')
     }
   }
