@@ -3,12 +3,31 @@ import { createServer } from 'http'
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import { JWT_SECRET, WS_BACKEND_PORT } from '@repo/backend-config/config'
+import amqp from 'amqplib'
 
 const server = createServer()
 const wss = new WebSocketServer({ server })
 const prisma = new PrismaClient()
 
 const port = WS_BACKEND_PORT
+const RABBITMQ_URL = 'amqp://localhost'
+const QUEUE_NAME = 'drawing_queue'
+
+let channel: amqp.Channel
+
+async function setupRabbitMQ() {
+  try {
+    const connection = await amqp.connect(RABBITMQ_URL)
+    channel = await connection.createChannel()
+    await channel.assertQueue(QUEUE_NAME, { durable: true })
+    console.log('Connected to RabbitMQ')
+  } catch (error) {
+    console.error('Failed to connect to RabbitMQ:', error)
+    process.exit(1)
+  }
+}
+
+setupRabbitMQ()
 
 interface ExtWebSocket extends WebSocket {
   userID?: string
@@ -117,7 +136,7 @@ async function handleLeaveRoom(ws: ExtWebSocket) {
       room.users.delete(ws.userID)
       broadcastToRoom(ws.roomId, { type: 'user_left', userID: ws.userID })
       if (room.users.size === 0) {
-        await saveRoomDrawings(ws.roomId, room.drawingData)
+        await saveRoomDrawingsToQueue(ws.roomId, room.drawingData)
         rooms.delete(ws.roomId)
       }
     }
@@ -141,7 +160,7 @@ async function handleDraw(ws: ExtWebSocket, drawingData: any) {
     const drawEvent = { type: 'draw', userID: ws.userID, drawingData }
     room.drawingData.push(drawEvent)
     broadcastToRoom(ws.roomId, drawEvent)
-    await saveDrawing(ws.roomId, ws.userID, drawEvent)
+    await addToDrawingQueue(ws.roomId, ws.userID, drawEvent)
   }
 }
 
@@ -161,7 +180,7 @@ async function handleAddShape(ws: ExtWebSocket, shapeData: any) {
     const shapeEvent = { type: 'add_shape', userID: ws.userID, shapeData }
     room.drawingData.push(shapeEvent)
     broadcastToRoom(ws.roomId, shapeEvent)
-    await saveDrawing(ws.roomId, ws.userID, shapeEvent)
+    await addToDrawingQueue(ws.roomId, ws.userID, shapeEvent)
   }
 }
 
@@ -181,7 +200,7 @@ async function handleErase(ws: ExtWebSocket, eraseData: any) {
     const eraseEvent = { type: 'erase', userID: ws.userID, eraseData }
     room.drawingData.push(eraseEvent)
     broadcastToRoom(ws.roomId, eraseEvent)
-    await saveDrawing(ws.roomId, ws.userID, eraseEvent)
+    await addToDrawingQueue(ws.roomId, ws.userID, eraseEvent)
   }
 }
 
@@ -193,25 +212,18 @@ function broadcastToRoom(roomId: string, message: any) {
   })
 }
 
-async function saveDrawing(roomId: string, userId: string, drawingData: any) {
-  await prisma.drawing.create({
-    data: {
-      data: JSON.stringify(drawingData),
-      roomId: roomId,
-      userId: userId,
-    },
-  })
+async function addToDrawingQueue(
+  roomId: string,
+  userId: string,
+  drawingData: any
+) {
+  const queueItem = JSON.stringify({ roomId, userId, drawingData })
+  channel.sendToQueue(QUEUE_NAME, Buffer.from(queueItem), { persistent: true })
 }
 
-async function saveRoomDrawings(roomId: string, drawingData: any[]) {
-  await prisma.drawing.deleteMany({ where: { roomId: roomId } })
-  await prisma.drawing.createMany({
-    data: drawingData.map(d => ({
-      data: JSON.stringify(d),
-      roomId: roomId,
-      userId: d.userID,
-    })),
-  })
+async function saveRoomDrawingsToQueue(roomId: string, drawingData: any[]) {
+  const queueItem = JSON.stringify({ roomId, drawingData, type: 'bulk_save' })
+  channel.sendToQueue(QUEUE_NAME, Buffer.from(queueItem), { persistent: true })
 }
 
 server.listen(port, () => {
