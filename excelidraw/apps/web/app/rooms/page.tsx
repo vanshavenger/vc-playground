@@ -57,7 +57,13 @@ export default function Rooms() {
       })
       if (response.ok) {
         const newRoom = await response.json()
-        setRooms(prevRooms => [...prevRooms, newRoom])
+        setRooms(prevRooms => [
+          ...prevRooms,
+          {
+            id: newRoom.roomID,
+            name: newRoom.name,
+          },
+        ])
         setNewRoomName('')
       } else {
         const data = await response.json()

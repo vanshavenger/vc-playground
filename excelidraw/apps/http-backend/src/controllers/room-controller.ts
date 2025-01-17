@@ -26,9 +26,11 @@ export const createRoom = async (
       },
     })
 
-    res
-      .status(201)
-      .json({ message: 'Room created successfully', roomID: dbResponse.id })
+    res.status(201).json({
+      message: 'Room created successfully',
+      roomID: dbResponse.id,
+      name: dbResponse.name,
+    })
   } catch (error) {
     next(error)
   }
