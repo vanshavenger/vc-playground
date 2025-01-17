@@ -1,0 +1,24 @@
+{
+  "name": "rabbit-mq",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc -b && node dist/index.js",
+    "build": "tsc -b",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@repo/backend-config": "*",
+    "@repo/config": "*",
+    "@repo/db": "*",
+    "@repo/typescript-config": "*",
+    "@types/amqplib": "^0.10.6"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.5"
+  }
+}

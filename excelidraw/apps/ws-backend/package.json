@@ -9,14 +9,16 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "amqplib": "^0.10.5",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*",
-    "@types/ws": "^8.5.13",
     "@repo/backend-config": "*",
-    "@repo/db": "*"
+    "@repo/db": "*",
+    "@repo/typescript-config": "*",
+    "@types/amqplib": "^0.10.6",
+    "@types/ws": "^8.5.13"
   },
   "keywords": [],
   "author": "",
