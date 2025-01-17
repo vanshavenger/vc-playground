@@ -123,10 +123,10 @@ export const deleteRoom = async (
   next: NextFunction
 ) => {
   try {
-    const { roomID } = req.params
+    const { id } = req.params
 
     const room = await prisma.room.findUnique({
-      where: { id: roomID },
+      where: { id: id },
     })
 
     if (!room) {
@@ -138,7 +138,7 @@ export const deleteRoom = async (
     }
 
     await prisma.room.delete({
-      where: { id: roomID },
+      where: { id: id },
     })
     res.status(204).send()
   } catch (error) {
