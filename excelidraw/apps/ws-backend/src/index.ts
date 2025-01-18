@@ -19,7 +19,6 @@ async function setupRabbitMQ() {
   try {
     const connection = await amqp.connect(RABBITMQ_URL)
     channel = await connection.createChannel()
-    await channel.assertQueue(QUEUE_NAME, { durable: true })
     console.log('Connected to RabbitMQ')
   } catch (error) {
     console.error('Failed to connect to RabbitMQ:', error)
