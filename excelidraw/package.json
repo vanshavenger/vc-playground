@@ -6,7 +6,8 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "build:config": "turbo run build --filter=@repo/config"
+    "build:config": "turbo run build --filter=@repo/config",
+    "ui": "bun --filter @repo/ui ui"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

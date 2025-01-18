@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +12,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { LogOut, User, Settings } from 'lucide-react'
+} from '@repo/ui/components/ui/dropdown-menu'
+import { Button } from '@repo/ui/components/ui/button'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@repo/ui/components/ui/avatar'
+import { LogOut, User } from 'lucide-react'
 
 export default function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -59,21 +64,18 @@ export default function Navigation() {
               transition={{ duration: 0.2 }}
               className='flex items-center space-x-4'
             >
-              <Link href='/rooms' passHref legacyBehavior>
-                <Button variant='ghost' as='a'>
-                  Rooms
-                </Button>
-              </Link>
+              <Button variant='ghost' asChild>
+                <Link href='/rooms'>Rooms</Link>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant='ghost'
                     className='relative h-8 w-8 rounded-full'
                   >
-                    <Avatar className='h-8 w-8'>
+                    <Avatar>
                       <AvatarImage
-                        src={`https://avatar.vercel.sh/${username}.png`}
-                        alt={username}
+                        src={`https://avatars.dicebear.com/api/avataaars/${username}.svg`}
                       />
                       <AvatarFallback>
                         {username.charAt(0).toUpperCase()}
@@ -116,16 +118,13 @@ export default function Navigation() {
               transition={{ duration: 0.2 }}
               className='space-x-2'
             >
-              <Link href='/signin' passHref legacyBehavior>
-                <Button variant='ghost' as='a'>
-                  Sign In
-                </Button>
-              </Link>
-              <Link href='/signup' passHref legacyBehavior>
-                <Button variant='default' as='a'>
-                  Sign Up
-                </Button>
-              </Link>
+              {' '}
+              <Button variant='ghost' asChild>
+                <Link href='/signin'>Sign In</Link>
+              </Button>
+              <Button variant='default' asChild>
+                <Link href='/signup'>Sign Up</Link>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>

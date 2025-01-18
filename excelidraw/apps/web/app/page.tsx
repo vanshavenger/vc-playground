@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/use-auth'
 import { EraserIcon } from 'lucide-react'

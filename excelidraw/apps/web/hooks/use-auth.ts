@@ -9,6 +9,7 @@ export function useAuth() {
       const token = localStorage.getItem('token')
       setIsLoggedIn(!!token)
       setIsLoading(false)
+       console.log('token', token)
     }
 
     checkAuth()
