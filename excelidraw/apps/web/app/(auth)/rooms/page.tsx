@@ -28,7 +28,6 @@ export default function Rooms() {
   const handleDeleteRoom = useCallback(
   
     async (roomId: string) => {
-      console.log(roomId)
       if (await deleteRoom(roomId)) {
         refetchRooms()
       }

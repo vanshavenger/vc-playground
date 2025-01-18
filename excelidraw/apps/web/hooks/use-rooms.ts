@@ -81,7 +81,8 @@ export function useRooms() {
         setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId))
         return true
       } else {
-        setError('Failed to delete room')
+        const data = await response.json()
+        setError(data.message || 'Failed to delete room')
         return false
       }
     } catch {
