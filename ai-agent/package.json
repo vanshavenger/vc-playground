@@ -1,0 +1,21 @@
+{
+  "name": "ai-agent",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ai-sdk/azure": "^1.1.0",
+    "@google/generative-ai": "^0.21.0",
+    "@types/readline-sync": "^1.4.8",
+    "ai": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "openai": "^4.79.1",
+    "readline-async": "^0.1.0",
+    "readline-sync": "^1.4.10"
+  }
+}
