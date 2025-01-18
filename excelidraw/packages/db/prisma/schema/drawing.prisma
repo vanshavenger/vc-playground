@@ -3,8 +3,8 @@ model Drawing {
   data      Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  room      Room     @relation(fields: [roomId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 }
