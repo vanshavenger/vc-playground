@@ -4,6 +4,7 @@
     "": {
       "name": "ai-todo",
       "dependencies": {
+        "@prisma/client": "^6.2.1",
         "prisma": "^6.2.1",
       },
       "devDependencies": {
@@ -15,6 +16,8 @@
     },
   },
   "packages": {
+    "@prisma/client": ["@prisma/client@6.2.1", "", { "peerDependencies": { "prisma": "*" }, "optionalPeers": ["prisma"] }, "sha512-msKY2iRLISN8t5X0Tj7hU0UWet1u0KuxSPHWuf3IRkB4J95mCvGpyQBfQ6ufcmvKNOMQSq90O2iUmJEN2e5fiA=="],
+
     "@prisma/debug": ["@prisma/debug@6.2.1", "", {}, "sha512-0KItvt39CmQxWkEw6oW+RQMD6RZ43SJWgEUnzxN8VC9ixMysa7MzZCZf22LCK5DSooiLNf8vM3LHZm/I/Ni7bQ=="],
 
     "@prisma/engines": ["@prisma/engines@6.2.1", "", { "dependencies": { "@prisma/debug": "6.2.1", "@prisma/engines-version": "6.2.0-14.4123509d24aa4dede1e864b46351bf2790323b69", "@prisma/fetch-engine": "6.2.1", "@prisma/get-platform": "6.2.1" } }, "sha512-lTBNLJBCxVT9iP5I7Mn6GlwqAxTpS5qMERrhebkUhtXpGVkBNd/jHnNJBZQW4kGDCKaQg/r2vlJYkzOHnAb7ZQ=="],

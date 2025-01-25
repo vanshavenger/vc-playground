@@ -1,0 +1,8 @@
+model todo {
+  id           String   @id @default(cuid())
+  title        String
+  completed    Boolean  @default(false)
+  completed_at DateTime?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}

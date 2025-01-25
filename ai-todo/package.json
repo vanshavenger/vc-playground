@@ -2,6 +2,10 @@
   "name": "ai-todo",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun run index.ts",
+    "migrate": "bunx prisma migrate dev"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -9,6 +13,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@prisma/client": "^6.2.1",
     "prisma": "^6.2.1"
   }
 }
