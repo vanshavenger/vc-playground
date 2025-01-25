@@ -6,7 +6,7 @@ const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
-  const result = await fetchTweets("Cryptopublican");
+  const result = await fetchTweets("AltcoinGordon");
 
   if (result.status === "error") {
     console.error(result.error);
@@ -17,9 +17,13 @@ async function main() {
   console.log(`Number of tweets: ${tweets.length}`);
 
   for (const tweet of tweets) {
-    const tokenAddress = await extractToken(tweet.contents);
-    console.log(tokenAddress);
     await sleep(5000);
+    const tokenAddress = await extractToken(tweet.contents);
+    if (tokenAddress.type !== "ADDRESS") {
+      continue;
+    }
+
+    console.log(tokenAddress.result);
   }
 }
 
