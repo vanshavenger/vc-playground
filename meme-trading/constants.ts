@@ -39,4 +39,4 @@ Output: { "result": "defitoken", "type": "NAME" }
 
 Input: "New token alert: bnb1w9qlvzm8wr7dsfyprpkzgcjf89qzwdf2ry7f7p on Binance Smart Chain! This one's a game-changer!"
 Output: { "result": "bnb1w9qlvzm8wr7dsfyprpkzgcjf89qzwdf2ry7f7p", "type": "ADDRESS" }
-`;
+`

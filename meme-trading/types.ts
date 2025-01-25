@@ -1,16 +1,16 @@
 export interface Tweet {
-  contents: string;
-  id: string;
-  createdAt: string;
+  contents: string
+  id: string
+  createdAt: string
 }
 
 interface FetchTweetsSuccess {
-  status: "success";
-  data: Tweet[];
+  status: 'success'
+  data: Tweet[]
 }
 
 interface FetchTweetsError {
-  status: "error";
-  error: string;
+  status: 'error'
+  error: string
 }
-export type FetchTweetsResult = FetchTweetsSuccess | FetchTweetsError;
+export type FetchTweetsResult = FetchTweetsSuccess | FetchTweetsError
