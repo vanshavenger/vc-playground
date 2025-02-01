@@ -9,6 +9,7 @@ from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from agno.vectordb.pgvector import PgVector, SearchType
 from agno.agent import Agent
 import time
+import pandas as pd
 
 load_dotenv()
 
@@ -18,6 +19,7 @@ AZURE_EMBEDDER_MODEL = "text-embedding-ada-002"
 DB_URL = "postgresql+psycopg://ai:ai@localhost:5532/ai"
 PDF_TABLE_NAME = "pdf_documents"
 INVOICE_FOLDER = "invoice"
+CSV_FILENAME = "invoice_data.csv"
 
 class InvoiceItem(BaseModel):
     item: str = Field(..., description="Name of the item")
@@ -169,11 +171,36 @@ def process_invoices():
 
     return all_invoice_data
 
+def create_dataframe(all_invoice_data: list[InvoiceData]):
+    return pd.DataFrame(
+        [
+            {
+                "invoice_number": inv.invoice_number,
+                "total_amount": inv.total_amount,
+                "total_tax": inv.total_tax,
+                "item": item.item,
+                "description": item.description,
+                "quantity": item.quantity,
+                "unit_price": item.unit_price,
+                "tax": item.tax,
+                "subtotal": item.subtotal,
+            }
+            for inv in all_invoice_data
+            for item in inv.items
+        ]
+    )
+
 def main():
     all_invoice_data = process_invoices()
     print(all_invoice_data)
     
+    df = create_dataframe(all_invoice_data)
+    print(df)
 
+    df.to_csv(CSV_FILENAME, index=False)
+    print(
+        f"CSV file '{CSV_FILENAME}' has been created with all extracted invoice data."
+    )
 
 if __name__ == "__main__":
     main()
