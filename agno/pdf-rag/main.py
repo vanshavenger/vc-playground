@@ -8,6 +8,7 @@ from pathlib import Path
 from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from agno.vectordb.pgvector import PgVector, SearchType
 from agno.agent import Agent
+import time
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ AZURE_EMBEDDER_DEPLOYMENT = "text-embedding-ada-002"
 AZURE_EMBEDDER_MODEL = "text-embedding-ada-002"
 DB_URL = "postgresql+psycopg://ai:ai@localhost:5532/ai"
 PDF_TABLE_NAME = "pdf_documents"
+INVOICE_FOLDER = "invoice"
 
 class InvoiceItem(BaseModel):
     item: str = Field(..., description="Name of the item")
@@ -152,6 +154,20 @@ def setup_agent(azure_model: AzureOpenAI, pdf_knowledge_base: PDFKnowledgeBase):
 def process_invoices():
     azure_model = setup_azure_model()
     azure_embedder = setup_azure_embedder()
+    
+    pdf_files = [f for f in os.listdir(INVOICE_FOLDER) if f.endswith(".pdf")]
+    all_invoice_data = []
+
+    for pdf_file in pdf_files:
+        pdf_path = os.path.join(INVOICE_FOLDER, pdf_file)
+        pdf_knowledge_base = setup_pdf_knowledge_base(pdf_path, azure_embedder)
+
+        agent = setup_agent(azure_model, pdf_knowledge_base)
+        response = agent.run("Extract the invoice data.")
+        invoice_data: InvoiceData = response.content
+        all_invoice_data.append(invoice_data)
+
+    return all_invoice_data
 
 def main():
     all_invoice_data = process_invoices()
