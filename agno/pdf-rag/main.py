@@ -1,5 +1,4 @@
 import os
-
 from agno.models.azure import AzureOpenAI
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -8,6 +7,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 from agno.knowledge.pdf import PDFKnowledgeBase, PDFReader
 from agno.vectordb.pgvector import PgVector, SearchType
+from agno.agent import Agent
 
 load_dotenv()
 
@@ -63,6 +63,91 @@ def setup_pdf_knowledge_base(pdf_path: str | Path, azure_embedder: AzureOpenAIEm
         num_documents=1,
         optimize_on=1,
     )
+
+def setup_agent(azure_model: AzureOpenAI, pdf_knowledge_base: PDFKnowledgeBase):
+    return Agent(
+        description="You are an expert Vansh product invoice data extractor. Your task is to meticulously extract and structure information from Vansh invoices, ensuring accuracy and completeness in the data you provide.",
+        instructions="""
+            ### Instruction ###
+            Extract the Vansh invoice data following these specific guidelines:
+
+            1. Invoice Number:
+            - Extract the exact Vansh invoice number as it appears on the document.
+            - Format: "VANSH-INV-YYYY-NNNN" or as it appears on the invoice.
+
+            2. Items:
+            For each Vansh product or service, extract the following in the specified format:
+            a) Item: Full Vansh product name or service title, exactly as it appears.
+            b) Description: Additional details about the Vansh item. This should be separate from the item name.
+            c) Quantity: Exact number of units (integer or decimal).
+            d) Unit Price: Price per unit, as a numeric value without currency symbols.
+            e) Tax: Tax amount for the item if stated, otherwise null.
+            f) Subtotal: Total price for this item (quantity * unit price).
+
+            3. Total Amount:
+            - Extract the final total amount as a numeric value, excluding currency symbols.
+
+            4. Total Tax:
+            - Extract the explicitly stated total tax amount.
+            - If not stated, calculate by summing individual item taxes.
+            - If no tax information is available, set to null.
+
+            Additional Instructions:
+            - Preserve original formatting of Vansh SKUs, product codes, and identifiers in the item name.
+            - Convert all numeric values to appropriate number types (integer or float).
+            - Represent absent required fields as null.
+            - Ensure all extracted data is directly sourced from the Vansh invoice document.
+
+            Example:
+            Given the following Vansh invoice item:
+            "VANSH_TECH_001 - Vansh Pro Laptop, 16GB RAM, 512GB SSD, 1 unit @ $999.99, Tax: $80.00, Subtotal: $999.99"
+
+            The extracted data should be:
+            {
+                "item": "VANSH_TECH_001",
+                "description": "Vansh Pro Laptop, 16GB RAM, 512GB SSD",
+                "quantity": 1,
+                "unit_price": 999.99,
+                "tax": 80.00,
+                "subtotal": 999.99
+            }
+
+            Output Format:
+            {
+                "invoice_number": "VANSH-INV-2023-001",
+                "items": [
+                    {
+                        "item": "VANSH_TECH_001",
+                        "description": "Vansh Pro Laptop, 16GB RAM, 512GB SSD",
+                        "quantity": 1,
+                        "unit_price": 999.99,
+                        "tax": 80.00,
+                        "subtotal": 999.99
+                    },
+                    {
+                        "item": "VANSH_SERVICE_001",
+                        "description": "Vansh Tech Support - Premium package, 1-year subscription",
+                        "quantity": 1,
+                        "unit_price": 199.99,
+                        "tax": 16.00,
+                        "subtotal": 199.99
+                    }
+                ],
+                "total_amount": 1295.98,
+                "total_tax": 96.00
+            }
+
+            Extract the Vansh invoice data from the provided document and present it in the format shown above.
+        """,
+        add_references=True,
+        model=azure_model,
+        knowledge=pdf_knowledge_base,
+        search_knowledge=True,
+        markdown=False,
+        response_model=InvoiceData,
+        structured_outputs=True,
+    )
+    
 
 def process_invoices():
     azure_model = setup_azure_model()
