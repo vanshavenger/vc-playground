@@ -163,11 +163,13 @@ def process_invoices():
     for pdf_file in pdf_files:
         pdf_path = os.path.join(INVOICE_FOLDER, pdf_file)
         pdf_knowledge_base = setup_pdf_knowledge_base(pdf_path, azure_embedder)
+        pdf_knowledge_base.load(recreate=True, upsert=True)
 
         agent = setup_agent(azure_model, pdf_knowledge_base)
         response = agent.run("Extract the invoice data.")
         invoice_data: InvoiceData = response.content
         all_invoice_data.append(invoice_data)
+        time.sleep(2)
 
     return all_invoice_data
 
