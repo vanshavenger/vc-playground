@@ -1,0 +1,22 @@
+{
+  "name": "webpage-support",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@ai-sdk/azure": "^1.1.9",
+    "ai": "^4.1.16",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0",
+    "chromadb": "^1.10.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0"
+  }
+}
