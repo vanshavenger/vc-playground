@@ -7,5 +7,10 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@ai-sdk/azure": "^1.1.9",
+    "ai": "^4.1.18",
+    "zod": "^3.24.1"
   }
 }
