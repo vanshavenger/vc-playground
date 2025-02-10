@@ -58,5 +58,5 @@ export const subtract = tool(
     },
 );
 
-const tools = [multiply, divide, add, subtract];
+export const tools = [multiply, divide, add, subtract];
 export const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
