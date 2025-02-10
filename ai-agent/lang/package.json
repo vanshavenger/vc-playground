@@ -8,5 +8,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@langchain/core": "^0.3.39",
+    "@langchain/langgraph": "^0.2.45",
+    "@langchain/openai": "^0.4.3",
+    "zod": "^3.24.1"
+  }
 }
