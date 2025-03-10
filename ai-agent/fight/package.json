@@ -1,0 +1,17 @@
+{
+  "name": "fight",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@ai-sdk/azure": "^1.2.1",
+    "ai": "^4.1.54",
+    "ollama-ai-provider": "^1.2.0"
+  }
+}
