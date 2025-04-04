@@ -8,5 +8,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.6",
+    "@types/node": "^22.14.0",
+    "ai": "^4.3.0"
+  }
 }
