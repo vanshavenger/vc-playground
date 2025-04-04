@@ -2,14 +2,7 @@ import { google } from '@ai-sdk/google'
 import { experimental_createMCPClient, streamText } from 'ai'
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio'
 
-const model = google('gemini-2.5-pro-exp-03-25', {
-  safetySettings: [
-    {
-      category: 'HARM_CATEGORY_CIVIC_INTEGRITY',
-      threshold: 'BLOCK_NONE',
-    },
-  ],
-})
+const model = google('gemini-2.5-pro-exp-03-25')
 
 const main = async () => {
   try {
@@ -27,7 +20,8 @@ const main = async () => {
     const { textStream } = streamText({
       model: model,
       tools: tools,
-      maxSteps: 10,
+        maxSteps: 10,
+      toolCallStreaming: true,
       messages: [
         {
           role: 'user',
@@ -38,13 +32,10 @@ const main = async () => {
       onFinish: async () => {
         await clientOne.close()
       },
-      onChunk: async (chunk) => {
-        console.log('Chunk:', chunk.chunk)
-      },
-      onStepFinish: async (step) => {
-        console.log('Step finished:', step.)
-      },
     })
+    for await (const text of textStream) {
+      process.stdout.write(text)
+    }
   } catch (error) {
     console.error('Error:', error)
   }
