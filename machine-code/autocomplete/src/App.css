@@ -43,3 +43,8 @@
   text-align: center;
   border-radius: 1px;
 }
+
+.result.selected {
+  background-color: #e6f7ff;
+  border-left: 3px solid #1890ff;
+}

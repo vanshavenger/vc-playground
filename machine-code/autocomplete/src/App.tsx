@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, type KeyboardEvent, useRef } from 'react'
 import './App.css'
 
 interface Recipe {
@@ -61,6 +61,41 @@ function App() {
     return () => clearTimeout(timeoutId)
   }, [input])
 
+  useEffect(() => {
+    setSelectedIndex(-1)
+  }, [data])
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (!show || isLoading || data.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSelectedIndex((prevIndex) =>
+        prevIndex < data.length - 1 ? prevIndex + 1 : prevIndex,
+      )
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSelectedIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 0))
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault()
+      setInput(data[selectedIndex].name)
+      setShow(false)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setShow(false)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && resultContainerRef.current) {
+      const selectedElement = resultContainerRef.current.children[
+        selectedIndex
+      ] as HTMLElement
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest' })
+      }
+    }
+  }, [selectedIndex])
+
   return (
     <div className='App'>
       <h1>Recipe Search</h1>
@@ -73,6 +108,7 @@ function App() {
           onChange={(e) => setInput(e.target.value)}
           onFocus={() => setShow(true)}
           onBlur={() => setTimeout(() => setShow(false), 100)}
+          onKeyDown={handleKeyDown}
           placeholder='Type to search recipes...'
           aria-describedby='search-status'
         />
