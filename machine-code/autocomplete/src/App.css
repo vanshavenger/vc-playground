@@ -30,5 +30,16 @@
 .result:hover {
   background-color: antiquewhite;
   cursor: pointer;
-  transition: all;
+}
+
+.no-results {
+  padding: 0.5rem;
+  text-align: center;
+  border-radius: 1px;
+}
+
+.loading {
+  padding: 0.5rem;
+  text-align: center;
+  border-radius: 1px;
 }
