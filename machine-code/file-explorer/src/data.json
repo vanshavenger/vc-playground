@@ -1,0 +1,71 @@
+[
+    {
+        "id": 1,
+        "name" : "public",
+        "isFolder": true,
+        "children": [
+            {
+                "id": 2,
+                "name": "index.html",
+                "isFolder": false
+            },
+            {
+                "id": 3,
+                "name": "favicon.ico",
+                "isFolder": false
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "name": "src",
+        "isFolder": true,
+        "children" : [
+            {
+                "id": 5,
+                "name": "components",
+                "isFolder": true,
+                "children": [
+                    {
+                        "id" : 6,
+                        "name": "App.js",
+                        "isFolder": false
+                    },
+                    {
+                        "id" : 7,
+                        "name": "Header.js",
+                        "isFolder": false
+                    }
+                ]
+            },
+            {
+                "id": 8,
+                "name": "styles",
+                "isFolder": true,
+                "children": [
+                    {
+                        "id": 9,
+                        "name": "App.css",
+                        "isFolder": false
+                    },
+                    {
+                        "id": 10,
+                        "name": "Header.css",
+                        "isFolder": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 11,
+        "name": "node_modules",
+        "isFolder": true,
+        "children": []
+    },
+     {
+        "id": 12,
+        "name" : "package.json",
+        "isFolder": false
+     }
+]
