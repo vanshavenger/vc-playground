@@ -2,9 +2,9 @@ import { useState } from 'react';
 import './App.css'
 import jsonData from './data.json'
 import { FileSystem } from './types';
-import { FolderPlus, FilePlus } from 'lucide-react';
+import { FolderPlus, FilePlus,  Trash2Icon } from 'lucide-react';
 
-const FileItem = ({ item, onAddNode }: { item: FileSystem, onAddNode: (parentId: number, isFolder: boolean) => void }) => {
+const FileItem = ({ item, onAddNode, onDeleteNode }: { item: FileSystem, onAddNode: (parentId: number, isFolder: boolean) => void, onDeleteNode: (id: number) => void }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   const toggleCollapse = (e: React.MouseEvent) => {
@@ -40,25 +40,30 @@ const FileItem = ({ item, onAddNode }: { item: FileSystem, onAddNode: (parentId:
             >
               <FilePlus size={16} />
             </span>
+            
           </>
+
         )}
+        <span onClick={() => onDeleteNode(item.id)} className='add-icon clickable'>
+              <Trash2Icon  size={16}/>
+            </span>
       </div>
       {item.isFolder && item.children && !isCollapsed && (
         <div className="children">
-          <List onAddNode={onAddNode} data={item.children} />
+          <List onAddNode={onAddNode} data={item.children} onDeleteNode={onDeleteNode} />
         </div>
       )}
     </div>
   )
 }
 
-const List = ({ data, onAddNode }: {
-  data: FileSystem[], onAddNode:  (parentId: number, isFolder: boolean) => void
+const List = ({ data, onAddNode, onDeleteNode }: {
+  data: FileSystem[], onAddNode:  (parentId: number, isFolder: boolean) => void, onDeleteNode: (id: number) => void
  }) => {
   return (
     <div className="container">
       {data.map((item: FileSystem) => (
-        <FileItem key={item.id} item={item} onAddNode={onAddNode} />
+        <FileItem key={item.id} item={item} onAddNode={onAddNode} onDeleteNode={onDeleteNode} />
       ))}
     </div>
   )
@@ -67,6 +72,28 @@ const List = ({ data, onAddNode }: {
 
 function App() {
   const [data, setData] = useState<FileSystem[]>(jsonData)
+
+  const onDelete = (id: number) => {
+    const onDeleteNode = (items: FileSystem[]): FileSystem[] => {
+
+
+      const filteredItems = items.filter(item => item.id !== id)
+
+      console.log(filteredItems)
+
+      return filteredItems.map((item) => {
+        if (item.children && item.children.length > 0) {
+          return {
+            ...item,
+            children: onDeleteNode(item.children),
+          }
+        }
+        return item
+      })
+    }
+
+    setData(onDeleteNode(data))
+  }
 
   const onNode = (parentId: number, isFolder: boolean) => {
 
@@ -111,7 +138,7 @@ function App() {
         File explorer sandbox
       </h1>
       <p>Welcome to the file explorer application!</p>
-      <List data={data} onAddNode={onNode} />
+      <List data={data} onAddNode={onNode} onDeleteNode={onDelete} />
     </>
   )
 }
