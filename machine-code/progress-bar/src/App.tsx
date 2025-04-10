@@ -1,11 +1,10 @@
 import './App.css'
-import ProgressBar from './components/progress-bar'
+import Tabs from './components/tabs'
 
 function App() {
-
   return (
     <>
-     <ProgressBar/> 
+      <Tabs />
     </>
   )
 }
