@@ -65,3 +65,30 @@
   margin-top: 10px;
 }
 
+.otp-input {
+  height: 50px;
+  width: 50px;
+  font-size: 28px;
+  text-align: center;
+  margin: 0;
+
+  border-radius: 0;
+  background-color: #eee;
+  transition: all 0.2s ease;
+  color: #000;
+}
+
+.otp-input:focus {
+  border-color: #3b82f6;
+  position: relative;
+  color: #3b82f6;
+  z-index: 1;
+}
+
+.otp-input:first-of-type {
+  border-radius: 8px 0 0 8px;
+}
+
+.otp-input:last-of-type {
+  border-radius: 0 8px 8px 0;
+}

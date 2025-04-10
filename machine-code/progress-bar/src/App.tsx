@@ -1,10 +1,10 @@
 import './App.css'
-import Tabs from './components/tabs'
+import OTP from './components/otp'
 
 function App() {
   return (
     <>
-      <Tabs />
+      <OTP />
     </>
   )
 }
