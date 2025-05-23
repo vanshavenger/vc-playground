@@ -5,12 +5,15 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/express": "^5.0.2",
     "@types/node-zookeeper-client": "^1.1.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1",
     "node-zookeeper-client": "^1.1.3"
   }
 }
