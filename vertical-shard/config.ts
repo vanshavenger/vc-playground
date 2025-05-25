@@ -1,3 +1,6 @@
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
 interface DatabaseConfig {
   host: string
   user: string
@@ -51,3 +54,28 @@ export const config: Config = {
     maxAllowedLag: 1,
   },
 }
+
+export const EXPRESS_APP_PORT = 3000
+
+export interface SlaveStatus {
+  Slave_IO_Running: string
+  Slave_SQL_Running: string
+  Seconds_Behind_Master: number | null
+  Last_IO_Error: string
+  Last_SQL_Error: string
+}
+
+export interface MasterStatus {
+  File: string
+  Position: number
+}
+
+export interface ChecksumResult {
+  Checksum: number
+}
+
+export interface CountResult {
+  count: number
+}
+
+export const execAsync = promisify(exec)
