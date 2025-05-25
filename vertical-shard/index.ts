@@ -6,6 +6,26 @@ import crypto from 'crypto'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 
+declare global {
+  namespace Express {
+    interface Request {
+      shardingConfig: {
+        table1: {
+          host: string
+          port: number
+          database: string
+        }
+        table2: {
+          host: string
+          port: number
+          database: string
+        }
+        lastUpdated: string
+      }
+    }
+  }
+}
+
 const execAsync = promisify(exec)
 
 async function initializeDatabases() {
