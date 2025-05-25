@@ -1,0 +1,67 @@
+services:
+  mysql-db1:
+    image: mysql
+    container_name: mysql-db1
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db1
+    ports:
+      - "3306:3306"
+    command: --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --gtid-mode=ON --enforce-gtid-consistency=ON
+    volumes:
+      - db1_data:/var/lib/mysql
+    networks:
+      - sharding-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      timeout: 20s
+      retries: 10
+
+  mysql-db2:
+    image: mysql
+    container_name: mysql-db2
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db2
+    ports:
+      - "3307:3306"
+    command: --server-id=2 --log-bin=mysql-bin --binlog-format=ROW --gtid-mode=ON --enforce-gtid-consistency=ON
+    volumes:
+      - db2_data:/var/lib/mysql
+    networks:
+      - sharding-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      timeout: 20s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - sharding-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  db1_data:
+  db2_data:
+  zookeeper_data:
+  zookeeper_logs:
+
+networks:
+  sharding-network:
+    driver: bridge
