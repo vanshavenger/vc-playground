@@ -16,6 +16,7 @@ dependencies = [
     { name = "seaborn" },
     { name = "tensorflow" },
     { name = "tensorflow-hub" },
+    { name = "tf-keras" },
 ]
 
 [package.metadata]
@@ -29,6 +30,7 @@ requires-dist = [
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "tensorflow", specifier = ">=2.20.0" },
     { name = "tensorflow-hub", specifier = ">=0.16.1" },
+    { name = "tf-keras", specifier = ">=2.20.1" },
 ]
 
 [[package]]
