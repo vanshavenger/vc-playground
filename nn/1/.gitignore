@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 logs
+images
 ImageNetLabels.txt
 *.model
 # Distribution / packaging
