@@ -2,12 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.json
 # C extensions
 *.so
 logs
 ImageNetLabels.txt
-
+*.model
 # Distribution / packaging
 .Python
 build/
