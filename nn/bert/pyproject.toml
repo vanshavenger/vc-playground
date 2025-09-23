@@ -1,0 +1,13 @@
+[project]
+name = "bert"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.6",
+    "pandas>=2.3.2",
+    "tensorflow-hub>=0.16.1",
+    "tensorflow-text>=2.19.0",
+    "setuptools<81",
+]
