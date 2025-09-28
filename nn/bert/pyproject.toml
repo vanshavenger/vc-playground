@@ -10,4 +10,7 @@ dependencies = [
     "tensorflow-hub>=0.16.1",
     "tensorflow-text>=2.19.0",
     "setuptools<81",
+    "seaborn>=0.13.2",
+    "scikit-learn>=1.7.2",
+    "tf-keras>=2.19.0",
 ]
